@@ -1,9 +1,10 @@
+
 //Задача № 1
 function cachingDecoratorNew(func) {
     let cache = [];
 
     function wrapper(...args) {
-        const hash = md5(args.join(','));
+        const hash = md5(JSON.stringify(args));
         let objectInCache = cache.find(item => item.hash === hash);
 
         if (objectInCache) {
@@ -12,7 +13,7 @@ function cachingDecoratorNew(func) {
         }
 
         let result = func(...args);
-        cache.push({ hash, value: result });
+        cache.push({ hash: hash, value: result });
 
         if (cache.length > 5) {
             cache.shift();
@@ -32,24 +33,26 @@ function debounceDecoratorNew(func, delay) {
     let allCount = 0;
 
     function wrapper(...args) {
+        wrapper.allCount++;
+
         if (timeoutId) {
             clearTimeout(timeoutId);
-            allCount++;
         }
         if (!timeoutId) {
+            wrapper.count++;
             func.apply(this, args);
-            count++;
+
         }
 
         timeoutId = setTimeout(() => {
-            count++;
+            wrapper.count++;
             func.apply(this, args);
-            wrapper.count = count;
         }, delay);
 
-        wrapper.allCount = allCount;
     }
 
+    wrapper.count = count;
+    wrapper.allCount = allCount;
     return wrapper;
 
 }
